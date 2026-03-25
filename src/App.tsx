@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
+import fundoImg from './assets/fundo.jpg';
 
 const CARGOS = [
   "Franqueado(a)",
@@ -240,7 +241,7 @@ export default function App() {
       >
         {/* Background Image */}
         <img 
-          src="/fundo.jpg" 
+          src={fundoImg} 
           alt="Background" 
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
