@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Aboreto&family=Montserrat:wght@200;300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-poppins: "Poppins", sans-serif;
+  --font-aboreto: "Aboreto", cursive;
+  --color-gold-500: #B88645;
+  --color-gold-600: #9A6F38;
+  --color-cream: #F9F8F6;
+}
