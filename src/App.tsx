@@ -194,13 +194,14 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao enviar dados');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Falha ao enviar dados');
       }
       
       setIsSuccess(true);
-    } catch (error) {
-      console.error(error);
-      alert('Ocorreu um erro ao enviar sua inscrição. Verifique se a planilha está configurada corretamente.');
+    } catch (error: any) {
+      console.error("Erro detalhado:", error);
+      alert(`Ocorreu um erro ao enviar sua inscrição: ${error.message || 'Verifique se a planilha está configurada corretamente.'}`);
     } finally {
       setIsSubmitting(false);
     }
