@@ -37,6 +37,23 @@ async function startServer() {
 
       const sheets = google.sheets({ version: "v4", auth });
 
+      // Check if CPF already exists
+      const getResponse = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: "A:C", // We only need up to column C to check CPF
+      });
+
+      const rows = getResponse.data.values;
+      if (rows && rows.length > 0) {
+        // Find if any row has the same CPF (CPF is at index 2)
+        const cpfExists = rows.some(row => row[2] === cpf);
+        if (cpfExists) {
+          return res.status(400).json({ 
+            error: "Este CPF já está inscrito na convenção. Apenas uma inscrição por CPF é permitida." 
+          });
+        }
+      }
+
       // Append data to the sheet
       await sheets.spreadsheets.values.append({
         spreadsheetId,

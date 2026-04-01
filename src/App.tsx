@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
 import fundoImg from './assets/fundo.jpg';
 
@@ -156,6 +156,37 @@ const FixedElement = ({ id, layout, children, delay = 0, initialX = 0, initialY 
   );
 };
 
+const VerticalVideoPlayer = ({ videoId }: { videoId: string }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+
+  return (
+    <motion.div 
+      ref={ref} 
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
+      className="relative w-full max-w-[300px] md:max-w-[340px] aspect-[9/16] rounded-2xl overflow-hidden border border-gold-500/20 shadow-[0_0_40px_rgba(212,175,55,0.1)] bg-black"
+    >
+      {isInView ? (
+        <iframe
+          className="w-full h-full"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&playsinline=1`}
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        ></iframe>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-gold-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
 export default function App() {
   const [isMobile, setIsMobile] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -170,6 +201,7 @@ export default function App() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -183,6 +215,7 @@ export default function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage('');
     
     try {
       const response = await fetch('/api/subscribe', {
@@ -201,7 +234,7 @@ export default function App() {
       setIsSuccess(true);
     } catch (error: any) {
       console.error("Erro detalhado:", error);
-      alert(`Ocorreu um erro ao enviar sua inscrição: ${error.message || 'Verifique se a planilha está configurada corretamente.'}`);
+      setErrorMessage(error.message || 'Ocorreu um erro ao enviar sua inscrição. Verifique se a planilha está configurada corretamente.');
     } finally {
       setIsSubmitting(false);
     }
@@ -233,13 +266,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center overflow-hidden relative selection:bg-gold-500 selection:text-white">
+    <div className="min-h-screen bg-black text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
-      {/* 16:9 Container that scales to fit the screen perfectly */}
-      <div 
-        className="relative w-full md:aspect-video aspect-[9/16] max-h-[100dvh] mx-auto overflow-hidden bg-black" 
-        style={{ containerType: 'size' }}
-      >
+      {/* Hero Section */}
+      <div className="w-full h-[100dvh] flex items-center justify-center fixed inset-0 z-0 bg-black">
+        {/* 16:9 Container that scales to fit the screen perfectly */}
+        <div 
+          className="relative w-full md:aspect-video aspect-[9/16] max-h-[100dvh] mx-auto overflow-hidden bg-black" 
+          style={{ containerType: 'size' }}
+        >
         {/* Background Image */}
         <img 
           src={fundoImg} 
@@ -334,6 +369,44 @@ export default function App() {
         </FixedElement>
 
       </div>
+      </div>
+
+      {/* Videos Section */}
+      <div className="w-full min-h-screen bg-zinc-950 relative z-10 mt-[100dvh] flex flex-col items-center justify-center py-20 px-4 border-t border-gold-500/20 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+        <div className="absolute inset-0 bg-gold-500/5 blur-3xl -z-10"></div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 md:mb-16"
+        >
+          <h2 className="font-aboreto text-3xl md:text-5xl text-gold-500 mb-4">Sinta a Experiência</h2>
+          <p className="font-poppins text-white/70 text-sm md:text-base max-w-xl mx-auto">
+            Um pouco do que você vai viver na maior convenção de harmonização facial do Brasil.
+          </p>
+        </motion.div>
+
+        <div className="flex flex-col md:flex-row gap-8 md:gap-16 w-full max-w-5xl justify-center items-center">
+          <VerticalVideoPlayer videoId="ZQs-scfJmTY" />
+          <VerticalVideoPlayer videoId="gWa3V9L_jXY" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.4 }}
+          className="mt-16"
+        >
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-gradient-to-r from-gold-600 to-gold-500 hover:from-gold-500 hover:to-gold-400 text-white px-12 py-4 rounded-sm font-poppins font-medium tracking-wide transition-all shadow-lg shadow-gold-500/30 text-lg"
+          >
+            Quero Garantir Minha Vaga
+          </button>
+        </motion.div>
+      </div>
 
       {/* Registration Modal */}
       <AnimatePresence>
@@ -424,6 +497,12 @@ export default function App() {
                       <h3 className="text-2xl font-aboreto text-gold-500 mb-1">Inscrição Oficial</h3>
                       <p className="text-xs text-white/50 font-poppins uppercase tracking-wider">Exclusivo para unidades franqueadas</p>
                     </div>
+
+                    {errorMessage && (
+                      <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-sm text-red-400 text-sm font-poppins text-center">
+                        {errorMessage}
+                      </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
