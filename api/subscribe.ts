@@ -45,40 +45,62 @@ export default async function handler(req, res) {
     const sheets = google.sheets({ version: "v4", auth });
 
     // 1. Obter as informações da planilha para descobrir o nome da aba correta (vamos usar a primeira aba)
+    console.log("Conectando à planilha ID:", spreadsheetId.substring(0, 5) + "...");
     const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
     const sheetName = spreadsheet.data.sheets[0].properties.title;
+    console.log("Usando a aba:", sheetName);
 
-    // 2. Buscar os dados atuais para verificar CPF e descobrir a próxima linha vazia
+    // 2. Buscar os dados atuais para verificar CPF
     const getResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `'${sheetName}'!A:H`,
     });
 
     const rows = getResponse.data.values || [];
+    console.log(`Total de linhas encontradas: ${rows.length}`);
     
     if (rows.length > 0) {
       // Find if any row has the same CPF (CPF is at index 2)
-      const cpfExists = rows.some(row => row[2] === cpf);
+      const cpfExists = rows.some(row => {
+        const rowCpf = String(row[2] || "").replace(/\D/g, "");
+        const inputCpf = String(cpf || "").replace(/\D/g, "");
+        return rowCpf === inputCpf;
+      });
+      
       if (cpfExists) {
+        console.log("CPF já existe:", cpf);
         return res.status(400).json({ 
           error: "Este CPF já está inscrito na convenção. Apenas uma inscrição por CPF é permitida." 
         });
       }
     }
 
-    // A próxima linha vazia é o tamanho do array atual + 1
-    const nextRow = rows.length + 1;
+    // 3. Adicionar os dados
+    // Voltando para o APPEND mas garantindo a aba correta e limpando espaços
+    const values = [[
+      name, 
+      email, 
+      cpf, 
+      rg, 
+      phone, 
+      role, 
+      unit, 
+      new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
+    ]];
 
-    // 3. Usar UPDATE em vez de APPEND para garantir que os dados fiquem logo abaixo da última linha com texto
-    // Isso evita o bug do Google Sheets onde o APPEND joga os dados para a linha 1000 se houver formatação nas células vazias.
-    await sheets.spreadsheets.values.update({
+    console.log("Tentando salvar dados...");
+    const appendResponse = await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `'${sheetName}'!A${nextRow}:H${nextRow}`,
+      range: `'${sheetName}'!A1`, // Começa a procurar da A1
       valueInputOption: "USER_ENTERED",
+      insertDataOption: "INSERT_ROWS",
       requestBody: {
-        values: [[name, email, cpf, rg, phone, role, unit, new Date().toLocaleString("pt-BR")]],
+        values,
       },
     });
+
+    console.log("Resposta do Google Sheets:", appendResponse.status, appendResponse.statusText);
+    console.log("Dados salvos na linha:", appendResponse.data.updates?.updatedRange);
 
     // Send Email Notification (Optional)
     const smtpHost = process.env.SMTP_HOST;

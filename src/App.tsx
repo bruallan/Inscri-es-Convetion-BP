@@ -207,6 +207,7 @@ export default function App() {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    console.log("Background Image Path:", fundoImg);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -218,6 +219,7 @@ export default function App() {
     setErrorMessage('');
     
     try {
+      console.log("Enviando inscrição para:", formData.name);
       const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: {
@@ -226,11 +228,13 @@ export default function App() {
         body: JSON.stringify(formData)
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Falha ao enviar dados');
+        throw new Error(result.error || 'Falha ao enviar dados');
       }
       
+      console.log("Inscrição concluída com sucesso!");
       setIsSuccess(true);
     } catch (error: any) {
       console.error("Erro detalhado:", error);
@@ -269,17 +273,19 @@ export default function App() {
     <div className="min-h-screen bg-black text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
       {/* Hero Section */}
-      <div className="w-full h-[100dvh] flex items-center justify-center fixed inset-0 z-0 bg-black">
+      <div className="w-full h-[100dvh] flex items-center justify-center fixed inset-0 z-0">
         {/* 16:9 Container that scales to fit the screen perfectly */}
         <div 
-          className="relative w-full md:aspect-video aspect-[9/16] max-h-[100dvh] mx-auto overflow-hidden bg-black" 
+          className="relative w-full md:aspect-video aspect-[9/16] max-h-[100dvh] mx-auto overflow-hidden" 
           style={{ containerType: 'size' }}
         >
         {/* Background Image */}
         <img 
           src={fundoImg} 
           alt="Background" 
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center z-0"
+          onLoad={() => console.log("Background image loaded successfully")}
+          onError={(e) => console.error("Error loading background image", e)}
         />
            {/* 1. Elementos do Topo */}
         <FixedElement id="nao-e-mais-segredo" layout={layout} delay={0.2} initialX={50}>
