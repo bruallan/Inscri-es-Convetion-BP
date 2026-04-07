@@ -44,10 +44,36 @@ export default async function handler(req, res) {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    // Append data to the sheet
-    await sheets.spreadsheets.values.append({
+    // 1. Obter as informações da planilha para descobrir o nome da aba correta (vamos usar a primeira aba)
+    const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+    const sheetName = spreadsheet.data.sheets[0].properties.title;
+
+    // 2. Buscar os dados atuais para verificar CPF e descobrir a próxima linha vazia
+    const getResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: "A:H", // Appends to the first available sheet
+      range: `'${sheetName}'!A:H`,
+    });
+
+    const rows = getResponse.data.values || [];
+    
+    if (rows.length > 0) {
+      // Find if any row has the same CPF (CPF is at index 2)
+      const cpfExists = rows.some(row => row[2] === cpf);
+      if (cpfExists) {
+        return res.status(400).json({ 
+          error: "Este CPF já está inscrito na convenção. Apenas uma inscrição por CPF é permitida." 
+        });
+      }
+    }
+
+    // A próxima linha vazia é o tamanho do array atual + 1
+    const nextRow = rows.length + 1;
+
+    // 3. Usar UPDATE em vez de APPEND para garantir que os dados fiquem logo abaixo da última linha com texto
+    // Isso evita o bug do Google Sheets onde o APPEND joga os dados para a linha 1000 se houver formatação nas células vazias.
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `'${sheetName}'!A${nextRow}:H${nextRow}`,
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [[name, email, cpf, rg, phone, role, unit, new Date().toLocaleString("pt-BR")]],
