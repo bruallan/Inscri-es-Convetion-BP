@@ -19,14 +19,11 @@ const UNIDADES = [
   "Botopremium Arapiraca AL",
   "Botopremium Araripina PE",
   "Botopremium Bacabal MA",
-  "Botopremium Balneário Camboriú SC Pioneiros",
   "Botopremium Balsas MA",
   "Botopremium Barueri SP Parque Shopping Barueri",
-  "Botopremium Belo Horizonte MG Buritis",
   "Botopremium Belo Horizonte MG Pampulha",
   "Botopremium Campinas SP Conceição",
   "Botopremium Caratinga MG",
-  "Botopremium Curitiba PR Batel",
   "Botopremium Delmiro Gouveia AL",
   "Botopremium Duque de Caxias RJ Centro",
   "Botopremium Feira de Santana BA Sim",
@@ -272,21 +269,25 @@ export default function App() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
-      {/* Hero Section */}
-      <div className="w-full h-[100dvh] flex items-center justify-center fixed inset-0 z-0">
+      {/* Hero Section Background */}
+      <div className="fixed inset-0 z-0">
+        <img 
+          src={fundoImg} 
+          alt="" 
+          className="w-full h-full object-cover object-center"
+          onLoad={() => console.log("IMAGEM: Carregada com sucesso")}
+          onError={(e) => console.error("IMAGEM: Erro ao carregar", e)}
+        />
+        <div className="absolute inset-0 bg-black/40"></div>
+      </div>
+
+      {/* Hero Section Content */}
+      <div className="relative z-10 w-full h-[100dvh] flex items-center justify-center">
         {/* 16:9 Container that scales to fit the screen perfectly */}
         <div 
           className="relative w-full md:aspect-video aspect-[9/16] max-h-[100dvh] mx-auto overflow-hidden" 
           style={{ containerType: 'size' }}
         >
-        {/* Background Image */}
-        <img 
-          src={fundoImg} 
-          alt="Background" 
-          className="absolute inset-0 w-full h-full object-cover object-center z-0"
-          onLoad={() => console.log("Background image loaded successfully")}
-          onError={(e) => console.error("Error loading background image", e)}
-        />
            {/* 1. Elementos do Topo */}
         <FixedElement id="nao-e-mais-segredo" layout={layout} delay={0.2} initialX={50}>
           <h3 className="font-poppins font-medium text-white drop-shadow-lg leading-none whitespace-nowrap pointer-events-none" style={{ fontSize: '1em' }}>

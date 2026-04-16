@@ -44,31 +44,40 @@ export default async function handler(req, res) {
 
     const sheets = google.sheets({ version: "v4", auth });
 
-    // 1. Obter as informações da planilha para descobrir o nome da aba correta (vamos usar a primeira aba)
-    console.log("Conectando à planilha ID:", spreadsheetId.substring(0, 5) + "...");
-    const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
-    const sheetName = spreadsheet.data.sheets[0].properties.title;
-    console.log("Usando a aba:", sheetName);
+    console.log("--- INICIANDO PROCESSO DE INSCRIÇÃO ---");
+    console.log("Planilha ID:", spreadsheetId);
+
+    // 1. Obter as informações da planilha
+    let sheetName = "Página1"; // Fallback
+    try {
+      const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+      sheetName = spreadsheet.data.sheets[0].properties.title;
+      console.log("Aba detectada:", sheetName);
+    } catch (e) {
+      console.error("Erro ao obter metadados da planilha:", e.message);
+      // Mantém o fallback "Página1"
+    }
 
     // 2. Buscar os dados atuais para verificar CPF
+    console.log(`Buscando dados na aba '${sheetName}'...`);
     const getResponse = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `'${sheetName}'!A:H`,
+      range: `'${sheetName}'!A:C`,
     });
 
     const rows = getResponse.data.values || [];
-    console.log(`Total de linhas encontradas: ${rows.length}`);
+    console.log(`Linhas encontradas: ${rows.length}`);
     
     if (rows.length > 0) {
-      // Find if any row has the same CPF (CPF is at index 2)
-      const cpfExists = rows.some(row => {
-        const rowCpf = String(row[2] || "").replace(/\D/g, "");
-        const inputCpf = String(cpf || "").replace(/\D/g, "");
-        return rowCpf === inputCpf;
+      const inputCpfClean = String(cpf || "").replace(/\D/g, "");
+      const cpfExists = rows.some((row, index) => {
+        if (index === 0) return false; // Pular cabeçalho
+        const rowCpfClean = String(row[2] || "").replace(/\D/g, "");
+        return rowCpfClean === inputCpfClean && inputCpfClean !== "";
       });
       
       if (cpfExists) {
-        console.log("CPF já existe:", cpf);
+        console.log("CPF DUPLICADO BLOQUEADO:", cpf);
         return res.status(400).json({ 
           error: "Este CPF já está inscrito na convenção. Apenas uma inscrição por CPF é permitida." 
         });
@@ -76,7 +85,6 @@ export default async function handler(req, res) {
     }
 
     // 3. Adicionar os dados
-    // Voltando para o APPEND mas garantindo a aba correta e limpando espaços
     const values = [[
       name, 
       email, 
@@ -88,10 +96,10 @@ export default async function handler(req, res) {
       new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })
     ]];
 
-    console.log("Tentando salvar dados...");
+    console.log("Enviando dados para o Google Sheets...");
     const appendResponse = await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `'${sheetName}'!A1`, // Começa a procurar da A1
+      range: `'${sheetName}'!A:H`,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: {
@@ -99,8 +107,8 @@ export default async function handler(req, res) {
       },
     });
 
-    console.log("Resposta do Google Sheets:", appendResponse.status, appendResponse.statusText);
-    console.log("Dados salvos na linha:", appendResponse.data.updates?.updatedRange);
+    console.log("Sucesso no Google Sheets:", appendResponse.status);
+    console.log("Range atualizado:", appendResponse.data.updates?.updatedRange);
 
     // Send Email Notification (Optional)
     const smtpHost = process.env.SMTP_HOST;
