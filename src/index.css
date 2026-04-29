@@ -5,7 +5,10 @@
   --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
   --font-poppins: "Poppins", sans-serif;
   --font-aboreto: "Aboreto", cursive;
+  
+  --color-gold-400: #D4A73E;
   --color-gold-500: #B88645;
   --color-gold-600: #9A6F38;
+  
   --color-cream: #F9F8F6;
 }

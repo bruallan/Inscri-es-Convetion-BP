@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
+import bgConvention from './assets/bg_convention.jpg';
 
 const CARGOS = [
   "Franqueado(a)",
@@ -203,7 +204,25 @@ export default function App() {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    console.log("Background Image Loaded from /bg_convention.jpg");
+
+    // --- DIAGNOSTIC LOGS ---
+    console.group("IMAGE DEBUG TRACE");
+    console.log("Trace 1: Import Value ->", bgConvention);
+    
+    fetch(bgConvention)
+      .then(res => {
+        console.log("Trace 2: Network Accessibility ->", res.status, res.statusText);
+        console.log("Trace 3: MIME Type ->", res.headers.get('content-type'));
+        return res.blob();
+      })
+      .then(blob => {
+        console.log("Trace 4: File Integrity ->", blob.size, "bytes received");
+      })
+      .catch(err => {
+        console.error("Trace 2/3 (ERROR): Network fetch failed.", err);
+      })
+      .finally(() => console.groupEnd());
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -245,22 +264,24 @@ export default function App() {
       
       {/* Background Section - Explicit Layering */}
       <div 
-        id="bg-portal" 
         className="fixed inset-0 pointer-events-none"
         style={{ zIndex: -1 }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-900 via-black to-neutral-900"></div>
+        <div className="absolute inset-0 bg-black"></div>
         <img 
-          src="/convention_bg.jpg?v=1" 
-          alt="Convention Background" 
-          className="w-full h-full object-cover object-center opacity-70"
+          src={`${bgConvention}?t=${Date.now()}`} 
+          alt="" 
+          className="w-full h-full object-cover object-center transition-opacity duration-1000"
+          style={{ opacity: 0 }}
           onLoad={(e) => {
             const img = e.target as HTMLImageElement;
-            console.log(`IMAGE SUCCESS: ${img.naturalWidth}x${img.naturalHeight}`);
+            console.log("Trace 5: DOM Render SUCCESS ->", img.naturalWidth, "x", img.naturalHeight);
             img.style.opacity = '1';
           }}
           onError={(e) => {
-            console.error("IMAGE ERROR: File /convention_bg.jpg failed to render.");
+            const img = e.target as HTMLImageElement;
+            console.error("Trace 5: DOM Render FAILURE");
+            console.error("Failed SRC ->", img.src);
           }}
         />
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
