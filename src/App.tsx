@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
-import bgConvention from './assets/bg_convention.jpg';
 
 const CARGOS = [
   "Franqueado(a)",
@@ -242,17 +241,29 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
+    <div className="relative min-h-screen text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
-      {/* Background Section - Forced to back */}
-      <div className="fixed inset-0 z-[-10] bg-black">
+      {/* Background Section - Explicit Layering */}
+      <div 
+        id="bg-portal" 
+        className="fixed inset-0 pointer-events-none"
+        style={{ zIndex: -1 }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-900 via-black to-neutral-900"></div>
         <img 
-          src={bgConvention} 
-          alt="" 
-          className="w-full h-full object-cover object-center scale-105"
-          loading="eager"
+          src="/convention_bg.jpg?v=1" 
+          alt="Convention Background" 
+          className="w-full h-full object-cover object-center opacity-70"
+          onLoad={(e) => {
+            const img = e.target as HTMLImageElement;
+            console.log(`IMAGE SUCCESS: ${img.naturalWidth}x${img.naturalHeight}`);
+            img.style.opacity = '1';
+          }}
+          onError={(e) => {
+            console.error("IMAGE ERROR: File /convention_bg.jpg failed to render.");
+          }}
         />
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
       </div>
 
       {/* Hero Section Content */}
