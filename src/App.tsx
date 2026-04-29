@@ -205,26 +205,36 @@ export default function App() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    // --- DIAGNOSTIC LOGS ---
-    console.group("IMAGE DEBUG TRACE");
-    console.log("Trace 1: Import Value ->", bgConvention);
-    
-    fetch(bgConvention)
-      .then(res => {
-        console.log("Trace 2: Network Accessibility ->", res.status, res.statusText);
-        console.log("Trace 3: MIME Type ->", res.headers.get('content-type'));
-        return res.blob();
-      })
-      .then(blob => {
-        console.log("Trace 4: File Integrity ->", blob.size, "bytes received");
-      })
-      .catch(err => {
-        console.error("Trace 2/3 (ERROR): Network fetch failed.", err);
-      })
-      .finally(() => console.groupEnd());
+    // Optimized Background Loader
+    const loadBackground = async () => {
+      try {
+        const response = await fetch(bgConvention);
+        if (!response.ok) throw new Error('Network response error');
+        const blob = await response.blob();
+        const objectURL = URL.createObjectURL(blob);
+        
+        const img = new Image();
+        img.onload = () => {
+          setBgUrl(objectURL);
+          console.log("BACKGROUND: Final render successful via Blob.");
+        };
+        img.onerror = () => {
+          console.error("BACKGROUND: File data is unreadable by this browser.");
+        };
+        img.src = objectURL;
+      } catch (err) {
+        console.error("BACKGROUND: Failed to initialize asset.", err);
+      }
+    };
 
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    loadBackground();
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []); // Run once on mount
+
+  const [bgUrl, setBgUrl] = useState<string>('');
 
   const layout = isMobile ? mobileLayout : desktopLayout;
 
@@ -262,29 +272,28 @@ export default function App() {
   return (
     <div className="relative min-h-screen text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
-      {/* Background Section - Explicit Layering */}
+      {/* Background Section - Priority Rendering */}
       <div 
-        className="fixed inset-0 pointer-events-none"
+        className="fixed inset-0 pointer-events-none bg-black"
         style={{ zIndex: -1 }}
       >
-        <div className="absolute inset-0 bg-black"></div>
-        <img 
-          src={`${bgConvention}?t=${Date.now()}`} 
-          alt="" 
-          className="w-full h-full object-cover object-center transition-opacity duration-1000"
-          style={{ opacity: 0 }}
-          onLoad={(e) => {
-            const img = e.target as HTMLImageElement;
-            console.log("Trace 5: DOM Render SUCCESS ->", img.naturalWidth, "x", img.naturalHeight);
-            img.style.opacity = '1';
-          }}
-          onError={(e) => {
-            const img = e.target as HTMLImageElement;
-            console.error("Trace 5: DOM Render FAILURE");
-            console.error("Failed SRC ->", img.src);
-          }}
-        />
+        <AnimatePresence>
+          {bgUrl && (
+            <motion.img 
+              key={bgUrl}
+              src={bgUrl} 
+              alt="" 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.5 }}
+              className="w-full h-full object-cover object-center"
+            />
+          )}
+        </AnimatePresence>
+        
+        {/* Luxury Overlays */}
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30"></div>
       </div>
 
       {/* Hero Section Content */}
