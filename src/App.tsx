@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
-import fundoImg from './assets/fundo_v2.jpg';
 
 const CARGOS = [
   "Franqueado(a)",
@@ -204,7 +203,7 @@ export default function App() {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    console.log("Background Image Path:", fundoImg);
+    console.log("Background Image Loaded from /bg_convention.jpg");
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -241,42 +240,16 @@ export default function App() {
     }
   };
 
-  const handleSavePositions = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(layout, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "layout_positions.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  };
-
-  const handleLoadPositions = (e: any) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const newLayout = JSON.parse(event.target?.result as string);
-        setLayout(newLayout);
-      } catch (err) {
-        alert("Erro ao carregar o arquivo de layout.");
-      }
-    };
-    reader.readAsText(file);
-  };
-
   return (
     <div className="min-h-screen bg-black text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
-      {/* Hero Section Background */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <img 
-          src={`${fundoImg}?v=2`} 
+          src="/bg_convention.jpg" 
           alt="" 
           className="w-full h-full object-cover object-center scale-105"
-          onLoad={() => console.log("IMAGEM: Carregada com sucesso v2")}
-          onError={(e) => console.error("IMAGEM: Erro ao carregar v2", e)}
+          onLoad={() => console.log("IMAGEM: Carregada com sucesso do /public")}
+          onError={(e) => console.error("IMAGEM: Erro ao carregar do /public", e)}
           loading="eager"
           decoding="sync"
         />
