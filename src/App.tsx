@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
+import bgConvention from './assets/bg_convention.jpg';
 
 const CARGOS = [
   "Franqueado(a)",
@@ -245,15 +246,18 @@ export default function App() {
       
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <img 
-          src="/bg_convention.jpg" 
+          src={bgConvention} 
           alt="" 
-          className="w-full h-full object-cover object-center scale-105"
-          onLoad={() => console.log("IMAGEM: Carregada com sucesso do /public")}
-          onError={(e) => console.error("IMAGEM: Erro ao carregar do /public", e)}
+          className="w-full h-full object-cover object-center scale-105 opacity-100 transition-opacity duration-1000"
+          onLoad={(e) => {
+            console.log("IMAGEM: Carregada com sucesso das assets");
+            (e.target as HTMLImageElement).style.opacity = '1';
+          }}
+          onError={(e) => console.error("IMAGEM: Erro ao carregar das assets", e)}
           loading="eager"
           decoding="sync"
         />
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
       {/* Hero Section Content */}
