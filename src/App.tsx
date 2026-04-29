@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
-import fundoImg from './assets/fundo.jpg';
+import fundoImg from './assets/fundo_v2.jpg';
 
 const CARGOS = [
   "Franqueado(a)",
@@ -270,15 +270,17 @@ export default function App() {
     <div className="min-h-screen bg-black text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
       {/* Hero Section Background */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <img 
-          src={fundoImg} 
+          src={`${fundoImg}?v=2`} 
           alt="" 
-          className="w-full h-full object-cover object-center"
-          onLoad={() => console.log("IMAGEM: Carregada com sucesso")}
-          onError={(e) => console.error("IMAGEM: Erro ao carregar", e)}
+          className="w-full h-full object-cover object-center scale-105"
+          onLoad={() => console.log("IMAGEM: Carregada com sucesso v2")}
+          onError={(e) => console.error("IMAGEM: Erro ao carregar v2", e)}
+          loading="eager"
+          decoding="sync"
         />
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"></div>
       </div>
 
       {/* Hero Section Content */}
