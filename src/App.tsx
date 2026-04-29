@@ -242,20 +242,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen text-white selection:bg-gold-500 selection:text-white overflow-x-hidden">
       
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* Background Section - Forced to back */}
+      <div className="fixed inset-0 z-[-10] bg-black">
         <img 
           src={bgConvention} 
           alt="" 
-          className="w-full h-full object-cover object-center scale-105 opacity-100 transition-opacity duration-1000"
-          onLoad={(e) => {
-            console.log("IMAGEM: Carregada com sucesso das assets");
-            (e.target as HTMLImageElement).style.opacity = '1';
-          }}
-          onError={(e) => console.error("IMAGEM: Erro ao carregar das assets", e)}
+          className="w-full h-full object-cover object-center scale-105"
           loading="eager"
-          decoding="sync"
         />
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
